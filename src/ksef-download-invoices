@@ -15,9 +15,11 @@ while [[ $# -gt 0 ]]; do
     case "${1}" in
         --help|-h)
             SCRIPT_NAME=$(basename "$(readlink -f "${BASH_SOURCE[@]}")")
+            echo "usage: ${SCRIPT_NAME} [--config|-c <path>] [--subject-type|-st <type>] [--month-offset|-mo <number>] [--out-month-offset|-omo <number>] [--help|-h]"
+            echo
             echo "Download invoices from KSeF. Downloaded files will be placed in 'invoices' subdirectory of current working directory."
             echo
-            echo "Usage: ${SCRIPT_NAME} [--config|-c] [--subject-type|-st] [--month-offset|-mo] [--help|-h]"
+            echo "options:"
             echo "  -h, --help                  show this help"
             echo "  -c, --config                path to config toml containing env and auth method"
             echo "  -st, --subject-type         subject type, one of:"

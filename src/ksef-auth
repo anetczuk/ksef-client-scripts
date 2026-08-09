@@ -13,9 +13,11 @@ while [[ $# -gt 0 ]]; do
     case "${1}" in
         --help|-h)
             SCRIPT_NAME=$(basename "$(readlink -f "${BASH_SOURCE[@]}")")
-            echo "Authenticate to KSeF using config file."
+            echo "usage: ${SCRIPT_NAME} [-c <path>] [--help|-h]"
             echo
-            echo "Usage: ${SCRIPT_NAME} <config-path> [--help|-h]"
+            echo "authenticate to KSeF using config file"
+            echo
+            echo "options:"
             echo "  -h, --help      show this help"
             echo "  -c, --config    path to config toml containing env and auth method"
             exit 0

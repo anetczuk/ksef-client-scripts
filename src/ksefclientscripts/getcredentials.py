@@ -9,6 +9,7 @@
 
 import argparse
 import logging
+import os
 import sys
 
 from pykeepass.exceptions import CredentialsError
@@ -16,8 +17,11 @@ from pykeepass.exceptions import CredentialsError
 from ksefclientscripts.configfile import AuthType, ConfigField, load_config
 from ksefclientscripts.keepassxcauth import get_auth_data_direct
 
+SCRIPT_NAME = os.path.basename(sys.argv[0])  # noqa: PTH119
+
+
 if __name__ == "__main__":
-    _LOGGER = logging.getLogger("authenticate")
+    _LOGGER = logging.getLogger(SCRIPT_NAME)
 else:
     _LOGGER = logging.getLogger(__name__)
 
@@ -46,7 +50,7 @@ def get_auth_data(auth_params):
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="authenticate",
+        prog=SCRIPT_NAME,
         description="get access token",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )

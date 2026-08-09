@@ -1,6 +1,6 @@
 # ksef-client-scripts
 
-Access KSeF government invoice system in automated manner.
+Access KSeF government invoice system in automated manner. Project heavily based on `ksef-client` Python package.
 
 
 ## Features
@@ -12,33 +12,62 @@ Some features of the project:
 
 ## Running the application
 
-Application accepts following arguments:
+Project provides following scripts:
+- `ksef-auth` - for authentication
+- `ksef-auth-logout` - for logging out
+- `ksef-get-credentials` - get access token based on configuration
+- `ksef-convert-invoice-pdf` - for converting XMLs to PDFs
+- `ksef-download-invoices` - for downloading invoices
+
+Scripts accept following arguments:
 
 <!-- insertstart include="doc/cmdargs.txt" pre="\n" post="\n" -->
 ```
-Authenticate to KSeF using config file.
+usage: ksef-auth [-c <path>] [--help|-h]
 
-Usage: ksef-auth <config-path> [--help|-h]
+authenticate to KSeF using config file
+
+options:
   -h, --help      show this help
   -c, --config    path to config toml containing env and auth method
 ```
-```
-Logout active profile form KSeF.
 
-Usage: ksef-auth-logout [--help|-h]
+```
+usage: getcredentials.py [-h] [-c CONFIG]
+
+get access token
+
+options:
+  -h, --help            show this help message and exit
+  -c CONFIG, --config CONFIG
+                        Path to TOML config file (default: None)
+```
+
+```
+usage: ksef-auth-logout [--help|-h]
+
+logout active profile form KSeF
+
+options:
   -h, --help    show this help
 ```
+
 ```
+usage: ksef-convert-invoice-pdf [--invoice|-i <path>] [--help|-h]
+
 Convert KSeF invoice XML to PDF. Generated file will be placed along the XML file.
 
-Usage: ksef-convert-invoice-pdf [--invoice|-i] [--help|-h]
+options:
   -h, --help       show this help
   -i, --invoice    path to invoice XML file or path to directory with XMLs
 ```
+
 ```
+usage: ksef-download-invoices [--config|-c <path>] [--subject-type|-st <type>] [--month-offset|-mo <number>] [--out-month-offset|-omo <number>] [--help|-h]
+
 Download invoices from KSeF. Downloaded files will be placed in 'invoices' subdirectory of current working directory.
 
-Usage: ksef-download-invoices [--config|-c] [--subject-type|-st] [--month-offset|-mo] [--help|-h]
+options:
   -h, --help                  show this help
   -c, --config                path to config toml containing env and auth method
   -st, --subject-type         subject type, one of:
@@ -51,6 +80,7 @@ Usage: ksef-download-invoices [--config|-c] [--subject-type|-st] [--month-offset
                               positive - month from past
   -omo, --out-month-offset    month offset of output directory
 ```
+
 
 <!-- insertend -->
 

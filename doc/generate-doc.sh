@@ -65,10 +65,15 @@ generate_tools_help() {
     else
         echo "$COMMAND: no --listtools found"
     fi
+
+
+    echo >> "${HELP_MD_PATH}"
+    echo >> "${HELP_TXT_PATH}"
 }
 
 
 generate_tools_help "${SRC_DIR}/ksef-auth" "ksef-auth"
+generate_tools_help "${SRC_DIR}/ksefclientscripts/getcredentials.py" "ksef-get-credentials"
 generate_tools_help "${SRC_DIR}/ksef-auth-logout" "ksef-auth-logout"
 generate_tools_help "${SRC_DIR}/ksef-convert-invoice-pdf" "ksef-convert-invoice-pdf"
 generate_tools_help "${SRC_DIR}/ksef-download-invoices" "ksef-download-invoices"
