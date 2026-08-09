@@ -70,6 +70,13 @@ ACTIVATE_VENV_CONTENT='#!/bin/bash
 ## File was generated automatically. Any change will be lost. 
 ##
 
+##
+## Script operates in 3 modes:
+## 1. no imput - start venv in interactive mode
+## 2. with cmd args - execute content of arguments as commands
+## 3. with stdin input - execute content of stdin as commands
+##
+
 set -eu
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
@@ -77,37 +84,59 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 VENV_DIR="$VENV_ROOT_DIR"
 
 
-if [ "$#" -eq 0 ]; then
+execute_commands() {
+    bash <<EOL
+
+    source $VENV_DIR/bin/activate
+    if [ \$? -ne 0 ]; then
+        echo -e "Unable to activate virtual environment, exiting"
+        exit 1
+    fi
+    
+    set -e
+
+    ## executing command
+    echo "Executing inside venv:"
+    echo "$@"
+    eval "$@"
+
+EOL
+}
+
+
+if [[ ! -t 0 ]]; then
     ##
-    ## command not given - start virtual environment in interactive mode
+    ## commands passed as stdin input
     ##
 
-    set +e      ## prevent closing interactive session in case of error of any command
-    echo "Starting virtual env"
-    ## `exec < /dev/tty` prevents immediate exit from interactive mode
-    bash -i <<< "source $VENV_DIR/bin/activate && exec < /dev/tty"
+    ## executing command
+    commands=$(cat)
+    execute_commands "${commands}"
     exit 0
 fi
 
 
-##
-## running given command inside virtual environment
-##
+if [ "$#" -gt 0 ]; then
+    ##
+    ## commands passed as arguments
+    ##
 
-bash <<EOL
-source $VENV_DIR/bin/activate
-if [ \$? -ne 0 ]; then
-    echo -e "Unable to activate virtual environment, exiting"
-    exit 1
+    ## executing command
+    execute_commands "${@}"
+    exit 0
 fi
 
-set -e
 
-## executing command
-echo "Executing inside venv: $@"
-eval "$@"
+## 
+## no args given - start virtual environment in interactive mode
+##
 
-EOL
+set +e      ## prevent closing interactive session in case of error of any command
+echo "Starting virtual env"
+## `exec < /dev/tty` prevents immediate exit from interactive mode
+bash -i <<< "source $VENV_DIR/bin/activate && exec < /dev/tty"
+exit 0
+
 '
 
 # shellcheck disable=SC2016

@@ -1,0 +1,75 @@
+[project]
+name = "ksef-client-scripts"
+version = "1.0.1"
+description = "scripts for automated access to KSeF government invoice system"
+keywords = ["KSeF", "invoice", "autmated"]
+readme = "README.md"
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
+authors = [
+    ## separate 'name' and 'email' hack to fill "Author:" and "Author-email:" fields
+    { name = "Arkadiusz Netczuk" }, { email = "dev.arnet@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "appdirs",
+    #"pytz",
+    "toml",
+    "pykeepass",
+    "keepassxc_browser",
+    "ksef-client[cli]==0.14.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/anetczuk/ksef-client-scripts"
+Repository = "https://github.com/anetczuk/ksef-client-scripts"
+
+[project.optional-dependencies]
+dev = [
+    ### dependencies for "tools" scripts
+
+    "xmltodict",    ## for mdpreproc.py
+
+    "black",
+    "pycodestyle",
+    "flake8",
+    "pylint",
+    "ruff",
+    "complexipy",
+    "bandit",
+    "codespell",
+    "shellcheck_py",
+    "pydocstyle",
+    "mypy",
+    "coverage",             ## for coverage.sh
+    "mdlinkscheck",
+
+    ## for profiling (tools/profiler.sh)
+    "pyprof2calltree",   
+    "snakeviz",
+    "mtprof",
+    "viztracer",
+]
+
+[project.scripts]
+## define run scripts: <exec-name> = <python-function>
+ksef-get-credentials = "ksefclientscripts.getcredentials:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+## install pointed scripts to /bin directory
+script-files = ["src/ksef-auth", "src/ksef-auth-logout", 
+                "src/ksef-convert-invoice-pdf", 
+                "src/ksef-download-invoices"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["ksefclientscripts*"]
+
+[tool.setuptools.package-data]
+## assign list of additional files to given Python packages
+ksefclientscripts = [ "*.bash", "*.sh" ]
+
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"

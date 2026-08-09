@@ -1,0 +1,108 @@
+#!/bin/bash
+
+##
+## Required package: yq
+##
+
+set -eu
+
+
+CONFIG_PATH=""
+
+while [[ $# -gt 0 ]]; do
+    case "${1}" in
+        --help|-h)
+            SCRIPT_NAME=$(basename "$(readlink -f "${BASH_SOURCE[@]}")")
+            echo "Authenticate to KSeF using config file."
+            echo
+            echo "Usage: ${SCRIPT_NAME} <config-path> [--help|-h]"
+            echo "  -h, --help      show this help"
+            echo "  -c, --config    path to config toml containing env and auth method"
+            exit 0
+            ;;
+
+        --config=*|-c=*)
+            CONFIG_PATH="${1#*=}"
+            ;;
+        --config|-c)
+            CONFIG_PATH="${2}"
+            shift 2
+            ;;
+
+        *)
+            echo "unknown argument: ${1}"
+            exit 1
+            ;;
+    esac
+done
+
+
+AUTH_SCRIPT_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[@]}")")
+
+
+SITE_PACKAGES=$(python3 -c "import ksefclientscripts; import os; print(os.path.dirname(ksefclientscripts.__file__))")
+
+# shellcheck disable=SC1091
+source "${SITE_PACKAGES}/utils.bash"
+
+
+auth_log_in() {
+    local profile_type=$(tomlq -r '.profile.env' "${toml_config_path}")
+    local token=$(ksef-get-credentials -c "${toml_config_path}")
+
+    if [ -z "${token}" ]; then
+        echo "unable to get authentication data"
+        exit 1
+    fi
+
+    local context_type=$(tomlq -r '.context.type' "${toml_config_path}")
+    local context_value=$(tomlq -r '.context.value' "${toml_config_path}")
+
+    if ! ksef profile list | grep "OK (profile.list, profile=${profile_name})" > /dev/null; then
+        ## profile not active
+        echo "initializing ${profile_name} environment of type ${profile_type}"
+        ksef init --non-interactive --name "${profile_name}" --env "${profile_type}" --context-type "${context_type}" --context-value "${context_value}" --set-active
+    fi
+
+    ksef auth login-token --ksef-token "${token}"
+}
+
+
+## $1 - config path
+auth_env() {
+    local toml_config_path="${1}"
+    local profile_name=$(tomlq -r '.profile.name' "${toml_config_path}")
+
+    auth_status_json="$(ksef --json auth status)"
+
+    if ! is_json_ok "${auth_status_json}"; then
+        ## invalid response
+        echo "could not get authentication status - need authentication"
+        auth_log_in
+        exit 1
+    fi
+
+    curr_profile_name=$(jq -r '.profile' <<< "${auth_status_json}")
+    if [[ "${curr_profile_name}" != "${profile_name}" ]]; then
+        ## profile name differs
+        echo "current profile differs - need authentication"
+        auth_log_in
+        return 0
+    fi
+
+    access_until=$(jq -r '.data.access_valid_until' <<< "${auth_status_json}")
+    ## offset "until" timestamp to make sure that next command after authorization will not exceed the limit
+    access_until_timestamp=$(date -d "${access_until} -1 minute" +%s)
+    current_timestamp=$(date +%s)
+
+    if (( current_timestamp > access_until_timestamp )); then
+        echo "session timeout - need authentication"
+        auth_log_in
+        return 0
+    fi
+
+    echo "already authenticated"
+}
+
+
+auth_env "${CONFIG_PATH}"

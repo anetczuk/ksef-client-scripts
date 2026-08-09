@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -eu
+
+
+while [[ $# -gt 0 ]]; do
+    case "${1}" in
+        --help|-h)
+            SCRIPT_NAME=$(basename "$(readlink -f "${BASH_SOURCE[@]}")")
+            echo "Logout active profile form KSeF."
+            echo
+            echo "Usage: ${SCRIPT_NAME} [--help|-h]"
+            echo "  -h, --help    show this help"
+            exit 0
+            ;;
+
+        *)
+            echo "unknown argument: ${1}"
+            exit 1
+            ;;
+    esac
+done
+
+
+ksef auth logout

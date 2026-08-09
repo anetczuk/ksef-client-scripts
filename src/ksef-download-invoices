@@ -1,0 +1,163 @@
+#!/bin/bash
+
+set -eu
+
+
+## ============================================================================
+
+
+CONFIG_PATH=""
+SUBJECT_TYPE=""
+MONTH_OFFSET="0"
+OUT_MONTH_OFFSET="0"
+
+while [[ $# -gt 0 ]]; do
+    case "${1}" in
+        --help|-h)
+            SCRIPT_NAME=$(basename "$(readlink -f "${BASH_SOURCE[@]}")")
+            echo "Download invoices from KSeF. Downloaded files will be placed in 'invoices' subdirectory of current working directory."
+            echo
+            echo "Usage: ${SCRIPT_NAME} [--config|-c] [--subject-type|-st] [--month-offset|-mo] [--help|-h]"
+            echo "  -h, --help                  show this help"
+            echo "  -c, --config                path to config toml containing env and auth method"
+            echo "  -st, --subject-type         subject type, one of:"
+            echo "                                Subject1 - sell invoices"
+            echo "                                Subject2 - buy invoices"
+            echo "                                Subject3 - third-party invoices"
+            echo "                                SubjectAuthorized - authorized entities"
+            echo "  -mo, --month-offset         month offset:"
+            echo "                                0 or none - current month"
+            echo "                              positive - month from past"
+            echo "  -omo, --out-month-offset    month offset of output directory"
+            exit 0
+            ;;
+
+        --config=*|-c=*)
+            CONFIG_PATH="${1#*=}"
+            ;;
+        --config|-c)
+            CONFIG_PATH="${2}"
+            shift 2
+            ;;
+
+        --subject-type=*|-st=*)
+            SUBJECT_TYPE="${1#*=}"
+            ;;
+        --subject-type|-st)
+            SUBJECT_TYPE="${2}"
+            shift 2
+            ;;
+
+        --month-offset=*|-mo=*)
+            MONTH_OFFSET="${1#*=}"
+            ;;
+        --month-offset|-mo)
+            MONTH_OFFSET="${2}"
+            shift 2
+            ;;
+
+        --output-month-offset=*|-omo=*)
+            OUT_MONTH_OFFSET="${1#*=}"
+            ;;
+        --output-month-offset|-omo)
+            OUT_MONTH_OFFSET="${2}"
+            shift 2
+            ;;
+
+        *)
+            echo "unknown argument: ${1}"
+            exit 1
+            ;;
+
+    esac
+done
+
+if [[ -z "${SUBJECT_TYPE}" ]]; then
+    echo "missing --subject-type argument"
+    exit 1
+fi
+if [[ ! "${SUBJECT_TYPE}" =~ ^(Subject1|Subject2|Subject3|SubjectAuthorized)$ ]]; then
+    echo "invalid --subject-type value"
+    exit 1
+fi
+
+
+## ============================================================================
+
+
+SITE_PACKAGES=$(python3 -c "import ksefclientscripts; import os; print(os.path.dirname(ksefclientscripts.__file__))")
+
+# shellcheck disable=SC1091
+source "${SITE_PACKAGES}/utils.bash"
+
+
+## dates
+OUT_OFFSET=$((${MONTH_OFFSET} + ${OUT_MONTH_OFFSET}))
+year_month_date=$(date -d "$(date +%Y-%m-%d) -${OUT_OFFSET} month" +%Y-%m)
+
+if [[ "${MONTH_OFFSET}" -gt 0 ]]; then
+    ## month from past
+    start_date=$(date -d "$(date +%Y-%m-01) -${MONTH_OFFSET} month" +%Y-%m-%d)
+    END_MONTH_OFFSET=$((${MONTH_OFFSET} - 1))
+    end_date=$(date -d "$(date +%Y-%m-01) -${END_MONTH_OFFSET} month -1 day" +%Y-%m-%d)
+else
+    ## current month  
+    start_date=$(date -d "$(date +%Y-%m-01)" +%Y-%m-%d)
+    end_date=$(date +%Y-%m-%d)
+fi
+
+
+get_invoice_json() {   
+    ## --subject-type Subject1 -- selling invoices only
+    ## --subject-type Subject2 -- buying invoices only
+    invoice_list_json=$(ksef --json invoice list --from "${start_date}" --to "${end_date}" --page-size 249 --sort-order asc --subject-type "${SUBJECT_TYPE}")
+
+    if ! is_json_ok "${invoice_list_json}"; then
+        ## invalid response
+        echo "unable to get invoices list"
+        exit 1
+    fi
+}
+
+
+echo "===== Authenticating ====="
+
+ksef-auth --config "${CONFIG_PATH}"
+
+
+echo "===== Getting invoices ====="
+
+SUBJECT_SUBDIR="unknown"
+case "${SUBJECT_TYPE}" in
+    Subject1)
+        SUBJECT_SUBDIR="sell"
+        ;;
+    Subject2)
+        SUBJECT_SUBDIR="buy"
+        ;;
+    Subject3)
+        SUBJECT_SUBDIR="third"
+        ;;
+    SubjectAuthorized)
+        SUBJECT_SUBDIR="auth"
+        ;;
+esac
+
+
+INVOICES_DIR="invoices/${year_month_date}/${SUBJECT_SUBDIR}"
+
+mkdir -p "${INVOICES_DIR}"
+
+echo "downloading invoices in range: ${start_date} ${end_date} into ${year_month_date}"
+
+ksef export run --from "${start_date}" --to "${end_date}" --subject-type "${SUBJECT_TYPE}" --out "${INVOICES_DIR}"
+
+
+echo "===== Converting invoices ====="
+
+invoice_list_json=$(cat "${INVOICES_DIR}/_metadata.json")
+convert_export_json_to_pdf "${invoice_list_json}" "${INVOICES_DIR}"
+
+
+echo
+echo "Processing completed"

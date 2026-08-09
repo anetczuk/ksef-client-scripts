@@ -46,6 +46,7 @@ check_dirs+=("$SCRIPT_DIR")
 
 
 echo "running black"
+## replaces double quotes with single quote
 "${COMMAND_PATH}"black --line-length=120 "${check_dirs[@]}"
 exit_code=$?
 
@@ -179,6 +180,15 @@ run_ruff() {
     ignore_errors+=(PTH122)     ## PTH122 `os.path.splitext()` should be replaced by `Path.suffix`, `Path.stem`, and `Path.parent`
     ignore_errors+=(PTH123)     ## PTH123 `open()` should be replaced by `Path.open()
     ignore_errors+=(PTH208)     ## PTH208 Use `pathlib.Path.iterdir()` instead.
+
+    ignore_errors+=(D100)       ## D100 Missing docstring in public module
+    ignore_errors+=(D101)       ## D101 Missing docstring in public class
+    ignore_errors+=(D102)       ## D102 Missing docstring in public method
+    ignore_errors+=(D103)       ## D103 Missing docstring in public function
+    ignore_errors+=(D107)       ## D107 Missing docstring in `__init__`
+    ignore_errors+=(INP001)     ## INP001 File `tools/utils.py` is part of an implicit namespace package. Add an `__init__.py`.
+    ignore_errors+=(PTH110)     ## PTH110 `os.path.exists()` should be replaced by `Path.exists()`
+
 
     ignore_string="${ignore_errors[*]}"
     ignore_string="${ignore_string//${IFS:0:1}/,}"

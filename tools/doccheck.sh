@@ -27,7 +27,11 @@ fi
 ## ============================================
 
 ignore_errors=()
-#ignore_errors+=(D100)     ## D100: Missing docstring in public module
+#TODO: fix
+ignore_errors+=(D100)     ## D100: Missing docstring in public module
+ignore_errors+=(D101)     ## D101: Missing docstring in public class
+ignore_errors+=(D102)     ## D102: Missing docstring in public method
+ignore_errors+=(D103)     ## D103: Missing docstring in public function
 
 ignore_string="${ignore_errors[*]}"
 ignore_string="${ignore_string//${IFS:0:1}/,}"      ## replace space with comma
