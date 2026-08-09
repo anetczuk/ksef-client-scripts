@@ -39,13 +39,12 @@ options:
 ```
 
 ```
-usage: ksef-download-invoices [--config|-c <path>] [--subject-type|-st <type>] [--month-offset|-mo <number>] [--out-month-offset|-omo <number>] [--help|-h]
+usage: ksef-download-invoices [--subject-type|-st <type>] [--month-offset|-mo <number>] [--out-month-offset|-omo <number>] [--help|-h]
 
-Download invoices from KSeF. Downloaded files will be placed in 'invoices' subdirectory of current working directory.
+Download invoices from KSeF using active profile. Downloaded files will be placed in 'invoices' subdirectory of current working directory.
 
 options:
   -h, --help                  show this help
-  -c, --config                path to config toml containing env and auth method
   -st, --subject-type         subject type, one of:
                                 Subject1 - sell invoices
                                 Subject2 - buy invoices

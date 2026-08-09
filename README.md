@@ -24,10 +24,11 @@ Scripts are available after installing the project. It can be installed in virtu
 Following example presents possibility of fetching all invoices from previous month:
 ```
 source "${VENV_DIR}"/bin/activate
-ksef-download-invoices --config "${CONFIG_PATH}" -st Subject1 -mo 1
-ksef-download-invoices --config "${CONFIG_PATH}" -st Subject2 -mo 1
-ksef-download-invoices --config "${CONFIG_PATH}" -st Subject3 -mo 1
-ksef-download-invoices --config "${CONFIG_PATH}" -st SubjectAuthorized -mo 1
+ksef-auth --config "${CONFIG_PATH}"
+ksef-download-invoices -st Subject1 -mo 1
+ksef-download-invoices -st Subject2 -mo 1
+ksef-download-invoices -st Subject3 -mo 1
+ksef-download-invoices -st SubjectAuthorized -mo 1
 ksef-auth-logout
 ```
 
@@ -75,13 +76,12 @@ options:
 ```
 
 ```
-usage: ksef-download-invoices [--config|-c <path>] [--subject-type|-st <type>] [--month-offset|-mo <number>] [--out-month-offset|-omo <number>] [--help|-h]
+usage: ksef-download-invoices [--subject-type|-st <type>] [--month-offset|-mo <number>] [--out-month-offset|-omo <number>] [--help|-h]
 
-Download invoices from KSeF. Downloaded files will be placed in 'invoices' subdirectory of current working directory.
+Download invoices from KSeF using active profile. Downloaded files will be placed in 'invoices' subdirectory of current working directory.
 
 options:
   -h, --help                  show this help
-  -c, --config                path to config toml containing env and auth method
   -st, --subject-type         subject type, one of:
                                 Subject1 - sell invoices
                                 Subject2 - buy invoices
