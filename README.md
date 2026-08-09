@@ -1,6 +1,6 @@
 # ksef-client-scripts
 
-Access KSeF government invoice system in automated manner. Project heavily based on `ksef-client` Python package.
+Access KSeF government invoice system in automated manner. Project wraps `ksef-client` Python package in convenience scripts.
 
 
 ## Features
@@ -18,6 +18,18 @@ Project provides following scripts:
 - `ksef-get-credentials` - get access token based on configuration
 - `ksef-convert-invoice-pdf` - for converting XMLs to PDFs
 - `ksef-download-invoices` - for downloading invoices
+
+Scripts are available after installing the project. It can be installed in virtual environment.
+
+Following example presents possibility of fetching all invoices from previous month:
+```
+source "${VENV_DIR}"/bin/activate
+ksef-download-invoices --config "${CONFIG_PATH}" -st Subject1 -mo 1
+ksef-download-invoices --config "${CONFIG_PATH}" -st Subject2 -mo 1
+ksef-download-invoices --config "${CONFIG_PATH}" -st Subject3 -mo 1
+ksef-download-invoices --config "${CONFIG_PATH}" -st SubjectAuthorized -mo 1
+ksef-auth-logout
+```
 
 Scripts accept following arguments:
 
@@ -83,6 +95,46 @@ options:
 
 
 <!-- insertend -->
+
+
+## Examples of config files
+
+Example config to authenticate based on token stored in KeePass database file:
+
+<!-- insertstart include="doc/config-keepass.toml" pre="\n```\n" post="```\n" -->
+```
+#### config
+
+profile.name = "ksef"           # any name
+profile.env = "PROD"            # one of: DEMO, TEST, PROD
+
+context.type = "nip"
+context.value = "1234567890"
+
+auth.type = "KEEPASSXC"                         # authenticate by accessing keepassxc deamon
+auth.dbpath = "/path/example/access.kdbx"       # path to KeePassXC database file
+auth.entrytitle = "ksef api token"              # title of keepassxc item (proper user/pass is identified by the title)
+```
+<!-- insertend -->
+
+Example config to authenticate based on token stored directly in config file:
+
+<!-- insertstart include="doc/config-raw.toml" pre="\n```\n" post="```\n" -->
+```
+#### config
+
+profile.name = "ksef"           # any name
+profile.env = "PROD"            # one of: DEMO, TEST, PROD
+
+context.type = "nip"
+context.value = "1234567890"
+
+auth.type = "TOKEN"                                  # authenticate by accessing keepassxc deamon
+auth.token = "1122334455-token-example-6677889900"   # raw token
+```
+<!-- insertend -->
+
+Storing production data directly in config file is not advisable.
 
 
 ## Installation

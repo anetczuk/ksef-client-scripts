@@ -1,4 +1,4 @@
-# config
+#### config
 
 profile.name = "ksef"           # any name
 profile.env = "PROD"            # one of: DEMO, TEST, PROD
@@ -6,5 +6,6 @@ profile.env = "PROD"            # one of: DEMO, TEST, PROD
 context.type = "nip"
 context.value = "1234567890"
 
-auth.type = "TOKEN"                                  # authenticate by accessing keepassxc deamon
-auth.token = "1122334455-token-example-6677889900"   # raw token
+auth.type = "KEEPASSXC"                         # authenticate by accessing keepassxc deamon
+auth.dbpath = "/path/example/access.kdbx"       # path to KeePassXC database file
+auth.entrytitle = "ksef api token"              # title of keepassxc item (proper user/pass is identified by the title)
