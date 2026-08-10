@@ -6,6 +6,6 @@ profile.env = "PROD"            # one of: TEST, DEMO, PROD
 context.type = "nip"
 context.value = "1234567890"
 
-auth.type = "KEEPASSXC"                         # authenticate by accessing keepassxc deamon
+auth.type = "KEEPASSXC"                         # authenticate by accessing keepassxc file
 auth.dbpath = "/path/example/access.kdbx"       # path to KeePassXC database file
 auth.entrytitle = "ksef api token"              # title of keepassxc item (proper user/pass is identified by the title)

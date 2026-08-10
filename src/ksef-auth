@@ -50,31 +50,45 @@ source "${SITE_PACKAGES}/utils.bash"
 
 
 auth_log_in() {
-    local profile_type=$(tomlq -r '.profile.env' "${toml_config_path}")
-    local token=$(ksef-get-credentials -c "${toml_config_path}")
-
-    if [ -z "${token}" ]; then
-        echo "unable to get authentication data"
-        exit 1
-    fi
-
     local context_type=$(tomlq -r '.context.type' "${toml_config_path}")
     local context_value=$(tomlq -r '.context.value' "${toml_config_path}")
 
     if ! ksef profile list | grep "OK (profile.list, profile=${profile_name})" > /dev/null; then
         ## profile not active
+        local profile_type=$(tomlq -r '.profile.env' "${toml_config_path}")
         echo "initializing ${profile_name} environment of type ${profile_type}"
         ksef init --non-interactive --name "${profile_name}" --env "${profile_type}" --context-type "${context_type}" --context-value "${context_value}" --set-active
     fi
 
-    ksef auth login-token --ksef-token "${token}"
+    local auth_type=$(tomlq -r '.auth.type' "${toml_config_path}")
+
+    if [[ "${auth_type}" == "ENV_VAR" ]]; then
+        ## authenticate using KSEF_TOKEN env var
+        ksef auth login-token
+        exit 0
+    fi    
+
+    if [[ "${auth_type}" == "PROMPT" ]]; then
+        ## authenticate using prompt
+        unset KSEF_TOKEN || true
+        ksef auth login-token
+        exit 0
+    fi    
+
+    local token=$(ksef-get-credentials -c "${toml_config_path}")
+    if [ -z "${token}" ]; then
+        echo "unable to get authentication data"
+        exit 1
+    fi
+
+    ## pass through env variable for security reasons
+    KSEF_TOKEN="${token}" ksef auth login-token 
 }
 
 
 ## $1 - config path
 auth_env() {
     local toml_config_path="${1}"
-    local profile_name=$(tomlq -r '.profile.name' "${toml_config_path}")
 
     auth_status_json="$(ksef --json auth status)"
 
@@ -85,6 +99,7 @@ auth_env() {
         exit 1
     fi
 
+    local profile_name=$(tomlq -r '.profile.name' "${toml_config_path}")
     curr_profile_name=$(jq -r '.profile' <<< "${auth_status_json}")
     if [[ "${curr_profile_name}" != "${profile_name}" ]]; then
         ## profile name differs

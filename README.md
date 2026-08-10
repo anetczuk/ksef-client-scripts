@@ -128,6 +128,12 @@ options:
 
 ## Examples of config files
 
+Allowed config authentication methods to be used in `auth.type`:
+- `TOKEN` - value of token to read from `auth.token`,
+- `KEEPASSXC` - token to read from KeePass database file (see example below),
+- `ENV_VAR` - use env variable `KSEF_TOKEN` to read token from,
+- `PROMPT` - pass token through command-line prompt.
+
 Example config to authenticate based on token stored in KeePass database file:
 
 <!-- insertstart include="examples/config-keepass.toml" pre="\n```\n" post="```\n" -->

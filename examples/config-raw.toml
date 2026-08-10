@@ -6,5 +6,5 @@ profile.env = "PROD"            # one of: TEST, DEMO, PROD
 context.type = "nip"
 context.value = "1234567890"
 
-auth.type = "TOKEN"                                  # authenticate by accessing keepassxc deamon
+auth.type = "TOKEN"                                  # authenticate by token from "auth.token"
 auth.token = "1122334455-token-example-6677889900"   # raw token
