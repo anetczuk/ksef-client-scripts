@@ -25,6 +25,7 @@ while [[ $# -gt 0 ]]; do
 
         --config=*|-c=*)
             CONFIG_PATH="${1#*=}"
+            shift
             ;;
         --config|-c)
             CONFIG_PATH="${2}"

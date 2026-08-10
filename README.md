@@ -124,7 +124,7 @@ Example config to authenticate based on token stored directly in config file:
 #### config
 
 profile.name = "ksef"           # any name
-profile.env = "PROD"            # one of: DEMO, TEST, PROD
+profile.env = "PROD"            # one of: TEST, DEMO, PROD
 
 context.type = "nip"
 context.value = "1234567890"

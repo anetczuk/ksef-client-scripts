@@ -9,6 +9,7 @@ set -eu
 SUBJECT_TYPE=""
 MONTH_OFFSET="0"
 OUT_MONTH_OFFSET="0"
+NO_PDF="0"
 
 while [[ $# -gt 0 ]]; do
     case "${1}" in
@@ -29,11 +30,13 @@ while [[ $# -gt 0 ]]; do
             echo "                                0 or none - current month"
             echo "                              positive - month from past"
             echo "  -omo, --out-month-offset    month offset of output directory"
+            echo "  --no-pdf                    do not generate PDF"
             exit 0
             ;;
 
         --subject-type=*|-st=*)
             SUBJECT_TYPE="${1#*=}"
+            shift
             ;;
         --subject-type|-st)
             SUBJECT_TYPE="${2}"
@@ -42,6 +45,7 @@ while [[ $# -gt 0 ]]; do
 
         --month-offset=*|-mo=*)
             MONTH_OFFSET="${1#*=}"
+            shift
             ;;
         --month-offset|-mo)
             MONTH_OFFSET="${2}"
@@ -50,10 +54,16 @@ while [[ $# -gt 0 ]]; do
 
         --output-month-offset=*|-omo=*)
             OUT_MONTH_OFFSET="${1#*=}"
+            shift
             ;;
         --output-month-offset|-omo)
             OUT_MONTH_OFFSET="${2}"
             shift 2
+            ;;
+
+        --no-pdf)
+            NO_PDF="1"
+            shift
             ;;
 
         *)
@@ -140,10 +150,12 @@ echo "downloading invoices in range: ${start_date} ${end_date} into ${year_month
 ksef export run --from "${start_date}" --to "${end_date}" --subject-type "${SUBJECT_TYPE}" --out "${INVOICES_DIR}"
 
 
-echo "===== Converting invoices ====="
-
-invoice_list_json=$(cat "${INVOICES_DIR}/_metadata.json")
-convert_export_json_to_pdf "${invoice_list_json}" "${INVOICES_DIR}"
+if [[ "${NO_PDF}" -eq "0" ]]; then
+    echo "===== Converting invoices ====="
+    
+    invoice_list_json=$(cat "${INVOICES_DIR}/_metadata.json")
+    convert_export_json_to_pdf "${invoice_list_json}" "${INVOICES_DIR}"
+fi
 
 
 echo

@@ -21,6 +21,7 @@ while [[ $# -gt 0 ]]; do
 
         --invoice=*|-i=*)
             INVOICE_PATH="${1#*=}"
+            shift
             ;;
         --invoice|-i)
             INVOICE_PATH="${2}"
