@@ -8,6 +8,12 @@ Access KSeF government invoice system in automated manner. Project wraps `ksef-c
 Some features of the project:
 - download invoices
 - generate PDF from invoice XML
+- generate invoice XML from template
+- register sell invoice XML in KSeF
+
+**WARNING:** authors of the project are not resposible for correctness of business information. Neither KSeF nor the project 
+validates business information in invoices, epsecially seller and buyer data, tax rates, net and gross values. Once invoice is 
+registered in KSeF then it cannot be removed.
 
 
 ## Running the application
@@ -18,11 +24,13 @@ Project provides following scripts:
 - `ksef-get-credentials` - get access token based on configuration
 - `ksef-convert-invoice-pdf` - for converting XMLs to PDFs
 - `ksef-download-invoices` - for downloading invoices
+- `ksef-generate-invoice` - generate invoice XML from template
+- `ksef-send-invoice` - register sell invoice XML in KSeF
 
 Scripts are available after installing the project. It can be installed in virtual environment.
 
 Following example presents possibility of fetching all invoices from previous month:
-```
+```bash
 source "${VENV_DIR}"/bin/activate
 ksef-auth --config "${CONFIG_PATH}"
 ksef-download-invoices -st Subject1 -mo 1
@@ -34,7 +42,7 @@ ksef-auth-logout
 
 Scripts accept following arguments:
 
-<!-- insertstart include="doc/cmdargs.txt" pre="\n" post="\n" -->
+<!-- insertstart include="doc/cmdargs.txt" pre="\n" post="" -->
 ```
 usage: ksef-auth [-c <path>] [--help|-h]
 
@@ -91,8 +99,29 @@ options:
                                 0 or none - current month
                               positive - month from past
   -omo, --out-month-offset    month offset of output directory
+  --no-pdf                    do not generate PDF
 ```
 
+```
+usage: ksef-generate-invoice [--invoice|-i <path>] [--output|-o <path>] [--help|-h]
+
+Generate invoice based on given template.
+
+options:
+  -h, --help                  show this help
+  -i, --invoice               path to invoice XML template file
+  -o, --output                path to generated XML file
+```
+
+```
+usage: ksef-send-invoice [--invoice|-i <path>] [--help|-h]
+
+Send invoices to KSeF using active profile.
+
+options:
+  -h, --help                  show this help
+  -i, --invoice               path to invoice XML file
+```
 
 <!-- insertend -->
 
@@ -101,12 +130,12 @@ options:
 
 Example config to authenticate based on token stored in KeePass database file:
 
-<!-- insertstart include="doc/config-keepass.toml" pre="\n```\n" post="```\n" -->
+<!-- insertstart include="examples/config-keepass.toml" pre="\n```\n" post="```\n" -->
 ```
 #### config
 
 profile.name = "ksef"           # any name
-profile.env = "PROD"            # one of: DEMO, TEST, PROD
+profile.env = "PROD"            # one of: TEST, DEMO, PROD
 
 context.type = "nip"
 context.value = "1234567890"
@@ -119,7 +148,7 @@ auth.entrytitle = "ksef api token"              # title of keepassxc item (prope
 
 Example config to authenticate based on token stored directly in config file:
 
-<!-- insertstart include="doc/config-raw.toml" pre="\n```\n" post="```\n" -->
+<!-- insertstart include="examples/config-raw.toml" pre="\n```\n" post="```\n" -->
 ```
 #### config
 
@@ -135,6 +164,117 @@ auth.token = "1122334455-token-example-6677889900"   # raw token
 <!-- insertend -->
 
 Storing production data directly in config file is not advisable.
+
+
+## Invoice template example
+
+There is invoice XML example:
+
+<!-- insertstart include="examples/invoice-sell-template-example.xml" pre="\n```\n" post="\n```\n" -->
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<Faktura xmlns:etd="http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2022/01/05/eD/DefinicjeTypy/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns="http://crd.gov.pl/wzor/2025/06/25/13775/">
+  <Naglowek>
+    <KodFormularza kodSystemowy="FA (3)" wersjaSchemy="1-0E">FA</KodFormularza>
+    <WariantFormularza>3</WariantFormularza>
+    <DataWytworzeniaFa>2026-07-09T13:52:07.384Z</DataWytworzeniaFa>
+    <SystemInfo>SamploFaktur</SystemInfo>
+  </Naglowek>
+  <Podmiot1>
+    <DaneIdentyfikacyjne>
+      <NIP>3941408410</NIP>
+      <Nazwa>ABC AGD sp. z o. o.</Nazwa>
+    </DaneIdentyfikacyjne>
+    <Adres>
+      <KodKraju>PL</KodKraju>
+      <AdresL1>ul. Przykladowa 1</AdresL1>
+      <AdresL2>00-001 Warszawa</AdresL2>
+    </Adres>
+  </Podmiot1>
+  <Podmiot2>
+    <DaneIdentyfikacyjne>
+      <NIP>5372379895</NIP>
+      <Nazwa>F.H.U. Jan Kowalski</Nazwa>
+    </DaneIdentyfikacyjne>
+    <Adres>
+      <KodKraju>PL</KodKraju>
+      <AdresL1>ul. Polna 1</AdresL1>
+      <AdresL2>00-001 Warszawa</AdresL2>
+    </Adres>
+    <JST>2</JST>
+    <GV>2</GV>
+  </Podmiot2>
+  <Fa>
+    <KodWaluty>PLN</KodWaluty>
+    <P_1>2026-08-02</P_1>
+    <P_2>${INVOICE_NUMBER}</P_2>
+    <P_6>2026-08-01</P_6>
+    <P_13_1>${INVOICE_NET_WORTH}</P_13_1>
+    <P_14_1>${INVOICE_TAX_AMOUNT}</P_14_1>
+    <P_15>${INVOICE_GROSS_AMOUNT}</P_15>
+    <Adnotacje>
+      <P_16>2</P_16>
+      <P_17>2</P_17>
+      <P_18>2</P_18>
+      <P_18A>2</P_18A>
+      <Zwolnienie>
+        <P_19N>1</P_19N>
+      </Zwolnienie>
+      <NoweSrodkiTransportu>
+        <P_22N>1</P_22N>
+      </NoweSrodkiTransportu>
+      <P_23>2</P_23>
+      <PMarzy>
+        <P_PMarzyN>1</P_PMarzyN>
+      </PMarzy>
+    </Adnotacje>
+    <RodzajFaktury>VAT</RodzajFaktury>
+      <FaWiersz>
+        <NrWierszaFa>1</NrWierszaFa>
+        <P_7>${INVOICE_ITEM_NAME}</P_7>
+        <P_8A>szt.</P_8A>
+        <P_8B>1</P_8B>
+        <P_9A>${INVOICE_NET_WORTH}</P_9A>
+        <P_11>${INVOICE_NET_WORTH}</P_11>
+        <P_12>${INVOICE_TAX_RATE}</P_12>
+      </FaWiersz>
+  </Fa>
+</Faktura>
+```
+<!-- insertend -->
+
+It contains following placeholders:
+- `${INVOICE_NUMBER}`
+- `${INVOICE_NET_WORTH}`
+- `${INVOICE_TAX_AMOUNT}`
+- `${INVOICE_GROSS_AMOUNT}`
+- `${INVOICE_ITEM_NAME}`
+- `${INVOICE_TAX_RATE}`
+
+Following script can be used to generate XML and PDF preview from template:
+```bash
+export INVOICE_NUMBER="FV-$RANDOM"
+
+export INVOICE_ITEM_NAME="service sample"
+export INVOICE_NET_WORTH="200"
+export INVOICE_TAX_RATE="23"
+export INVOICE_TAX_AMOUNT="46"      ## tax amount, have to be calculated properly!
+export INVOICE_GROSS_AMOUNT="246"   ## with tax, have to be calculated properly!
+
+ksef-generate-invoice -i "${EXAMPLES_DIR}/invoice-sell-template-example.xml" -o "${OUTPUT_DIR}/invoice-sell.xml"
+```
+
+**WARNING:** caller of the script is responsible for providing proper values like tax rate, tax amount and other business information.
+
+
+## Testing environments
+
+KSeF provides two testing environemnts:
+- TEST env: https://ap-test.ksef.mf.gov.pl/ - it is possible to access it with any data (eg. randomly generated NIP),
+- DEMO env: https://ap-demo.ksef.mf.gov.pl/ - it has to be accessed with real data (eg. your NIP and password).
+
+**WARNING:** do not enter real, confidential or sensitive business data into TEST or DEMO environments.
 
 
 ## Installation

@@ -60,7 +60,9 @@ package-dir = { "" = "src" }
 ## install pointed scripts to /bin directory
 script-files = ["src/ksef-auth", "src/ksef-auth-logout", 
                 "src/ksef-convert-invoice-pdf", 
-                "src/ksef-download-invoices"]
+                "src/ksef-download-invoices",
+                "src/ksef-generate-invoice", "src/ksef-send-invoice",
+                ]
 
 [tool.setuptools.packages.find]
 where = ["src"]

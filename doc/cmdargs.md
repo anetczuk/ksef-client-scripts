@@ -59,5 +59,29 @@ options:
                                 0 or none - current month
                               positive - month from past
   -omo, --out-month-offset    month offset of output directory
+  --no-pdf                    do not generate PDF
+```
+
+## ksef-generate-invoice --help
+```
+usage: ksef-generate-invoice [--invoice|-i <path>] [--output|-o <path>] [--help|-h]
+
+Generate invoice based on given template.
+
+options:
+  -h, --help                  show this help
+  -i, --invoice               path to invoice XML template file
+  -o, --output                path to generated XML file
+```
+
+## ksef-send-invoice --help
+```
+usage: ksef-send-invoice [--invoice|-i <path>] [--help|-h]
+
+Send invoices to KSeF using active profile.
+
+options:
+  -h, --help                  show this help
+  -i, --invoice               path to invoice XML file
 ```
 

@@ -77,3 +77,6 @@ generate_tools_help "${SRC_DIR}/ksefclientscripts/getcredentials.py" "ksef-get-c
 generate_tools_help "${SRC_DIR}/ksef-auth-logout" "ksef-auth-logout"
 generate_tools_help "${SRC_DIR}/ksef-convert-invoice-pdf" "ksef-convert-invoice-pdf"
 generate_tools_help "${SRC_DIR}/ksef-download-invoices" "ksef-download-invoices"
+
+generate_tools_help "${SRC_DIR}/ksef-generate-invoice" "ksef-generate-invoice"
+generate_tools_help "${SRC_DIR}/ksef-send-invoice" "ksef-send-invoice"

@@ -1,0 +1,63 @@
+#!/bin/bash
+
+set -eu
+
+
+## ============================================================================
+
+
+INVOICE_PATH=""
+OUTPUT_PATH=""
+
+while [[ $# -gt 0 ]]; do
+    case "${1}" in
+        --help|-h)
+            SCRIPT_NAME=$(basename "$(readlink -f "${BASH_SOURCE[@]}")")
+            echo "usage: ${SCRIPT_NAME} [--invoice|-i <path>] [--output|-o <path>] [--help|-h]"
+            echo
+            echo "Generate invoice based on given template."
+            echo
+            echo "options:"
+            echo "  -h, --help                  show this help"
+            echo "  -i, --invoice               path to invoice XML template file"
+            echo "  -o, --output                path to generated XML file"
+            exit 0
+            ;;
+
+        --invoice=*|-i=*)
+            INVOICE_PATH="${1#*=}"
+            shift
+            ;;
+        --invoice|-i)
+            INVOICE_PATH="${2}"
+            shift 2
+            ;;
+
+        --output=*|-o=*)
+            OUTPUT_PATH="${1#*=}"
+            shift
+            ;;
+        --output|-o)
+            OUTPUT_PATH="${2}"
+            shift 2
+            ;;
+
+        *)
+            echo "unknown argument: ${1}"
+            exit 1
+            ;;
+
+    esac
+done
+
+
+## ============================================================================
+
+
+envsubst < "${INVOICE_PATH}" > "${OUTPUT_PATH}"
+
+ksef-convert-invoice-pdf -i "${OUTPUT_PATH}"
+
+
+echo
+echo "Processing completed"
